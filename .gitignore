@@ -1,0 +1,65 @@
+# Environment Variables
+.env
+*.env
+**/.env
+.env.*
+.env.local
+
+# Uploads & User Generated Content
+uploads/
+**/uploads/
+
+# Datasets
+datasets/
+**/datasets/
+
+# AI / ML Model files & artifacts (excluding backend code module)
+/models/
+models/
+!backend/models/
+
+# Legacy Files
+legacy/
+**/legacy/
+
+# Node.js Dependencies
+node_modules/
+**/node_modules/
+.next/
+**/build/
+**/dist/
+
+# Python Virtual Environments & Cache
+venv/
+.venv/
+**/venv/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Log Files
+*.log
+logs/
+**/logs/
+*.log.*
+
+# Large files (>25MB: model weights, datasets, binary archives)
+*.bin
+*.onnx
+*.pt
+*.pth
+*.safetensors
+*.h5
+*.ckpt
+*.gguf
+*.iso
+*.tar.gz
+*.zip
+*.7z
+*.rar
+*.exe
+*.dll
+*.so
+*.dylib

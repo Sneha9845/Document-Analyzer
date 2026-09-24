@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # Unified Backend & Frontend
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: legal-analyzer-unified
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - qdrant
+      - redis
+      - neo4j
+    networks:
+      - legal-network
+
+  # Vector Database for RAG
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: legal-analyzer-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - legal-network
+
+  # Relational Database for history and feedback
+  postgres:
+    image: postgres:15
+    container_name: legal-analyzer-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-legal_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - legal-network
+
+  # Caching and State Management
+  redis:
+    image: redis:7
+    container_name: legal-analyzer-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - legal-network
+
+  # Knowledge Graph for clause relationships
+  neo4j:
+    image: neo4j:5
+    container_name: legal-analyzer-neo4j
+    ports:
+      - "7474:7474"
+    environment:
+      NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/password}
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - legal-network
+
+  # Celery Worker for Background Tasks
+  celery_worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: legal-analyzer-celery
+    command: celery -A celery_app.celery_app worker --loglevel=info
+    volumes:
+      - ./uploads:/app/uploads
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres
+      - qdrant
+      - neo4j
+    networks:
+      - legal-network
+
+networks:
+  legal-network:
+    driver: bridge
+
+volumes:
+  qdrant_data:
+  postgres_data:
+  neo4j_data:
